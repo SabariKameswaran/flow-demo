@@ -3,6 +3,7 @@ import { LitElement, html, css } from 'lit';
 class NodeElement extends LitElement {
   static properties = {
     node: { type: Object },
+    isConnecting: { type: Boolean },
   };
 
   static styles = css`
@@ -14,6 +15,10 @@ class NodeElement extends LitElement {
       padding: 10px;
       cursor: move;
       user-select: none;
+    }
+    :host(.connecting) {
+      border-color: #007bff;
+      box-shadow: 0 0 5px #007bff;
     }
     input {
       width: 100%;
@@ -31,8 +36,21 @@ class NodeElement extends LitElement {
         .value=${this.node.name}
         @change=${this._handleNameChange}
       >
-      <button class="connect-button" @click=${this._requestConnection}>Connect</button>
+      <button class="connect-button" @click=${this._requestConnection}>
+        ${this.isConnecting ? 'Cancel' : 'Connect'}
+      </button>
     `;
+  }
+
+  updated(changedProperties) {
+    super.updated(changedProperties);
+    if (changedProperties.has('isConnecting')) {
+      this.classList.toggle('connecting', this.isConnecting);
+    }
+    if (changedProperties.has('node')) {
+      this.style.left = `${this.node.x}px`;
+      this.style.top = `${this.node.y}px`;
+    }
   }
 
   firstUpdated() {

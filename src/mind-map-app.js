@@ -6,6 +6,7 @@ class MindMapApp extends LitElement {
   static properties = {
     nodes: { type: Array },
     edges: { type: Array },
+    connectingNodeId: { type: Number },
   };
 
   static styles = css`
@@ -26,6 +27,7 @@ class MindMapApp extends LitElement {
     super();
     this.nodes = [];
     this.edges = [];
+    this.connectingNodeId = null;
   }
 
   render() {
@@ -34,8 +36,10 @@ class MindMapApp extends LitElement {
       ${this.nodes.map(node => html`
         <node-element
           .node=${node}
+          .isConnecting=${this.connectingNodeId === node.id}
           @nodeupdate=${this._handleNodeUpdate}
           @connectrequest=${this._handleConnectRequest}
+          @click=${() => this._handleNodeClick(node.id)}
         ></node-element>
       `)}
       ${this.edges.map(edge => html`
@@ -62,23 +66,28 @@ class MindMapApp extends LitElement {
     this.nodes = this.nodes.map(node => 
       node.id === updatedNode.id ? updatedNode : node
     );
-    this._updateEdges();
+    this.requestUpdate();
   }
 
   _handleConnectRequest(e) {
-    const { sourceId, targetId } = e.detail;
-    if (sourceId !== targetId) {
-      const newEdge = {
-        id: `${sourceId}-${targetId}`,
-        sourceId,
-        targetId,
-      };
-      this.edges = [...this.edges, newEdge];
+    const sourceId = e.detail.sourceId;
+    this.connectingNodeId = sourceId;
+  }
+
+  _handleNodeClick(nodeId) {
+    if (this.connectingNodeId && this.connectingNodeId !== nodeId) {
+      this._createEdge(this.connectingNodeId, nodeId);
+      this.connectingNodeId = null;
     }
   }
 
-  _updateEdges() {
-    this.edges = this.edges.map(edge => ({...edge}));
+  _createEdge(sourceId, targetId) {
+    const newEdge = {
+      id: `${sourceId}-${targetId}`,
+      sourceId,
+      targetId,
+    };
+    this.edges = [...this.edges, newEdge];
   }
 }
 
