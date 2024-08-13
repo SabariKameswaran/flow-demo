@@ -33,6 +33,9 @@ class MindMapApp extends LitElement {
   render() {
     return html`
       <button class="create-button" @click=${this._createNode}>Create Node</button>
+      ${this.edges.map(edge => html`
+        <edge-element .edge=${edge} .nodes=${this.nodes}></edge-element>
+      `)}
       ${this.nodes.map(node => html`
         <node-element
           .node=${node}
@@ -41,9 +44,6 @@ class MindMapApp extends LitElement {
           @connectrequest=${this._handleConnectRequest}
           @click=${() => this._handleNodeClick(node.id)}
         ></node-element>
-      `)}
-      ${this.edges.map(edge => html`
-        <edge-element .edge=${edge}></edge-element>
       `)}
     `;
   }
@@ -54,8 +54,8 @@ class MindMapApp extends LitElement {
       const newNode = {
         id: Date.now(),
         name: nodeName,
-        x: 100,
-        y: 100,
+        x: Math.random() * (this.clientWidth - 100),
+        y: Math.random() * (this.clientHeight - 100),
       };
       this.nodes = [...this.nodes, newNode];
     }
