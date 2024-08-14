@@ -21,8 +21,29 @@ class NodeElement extends LitElement {
       box-shadow: 0 0 5px #007bff;
     }
     input {
-      width: 100%;
+      width: calc(100% - 30px); /* Adjust to make space for the delete button */
       box-sizing: border-box;
+    }
+    .node-content {
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+    .delete-button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background-color: red;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .connect-button {
       margin-top: 5px;
@@ -31,11 +52,14 @@ class NodeElement extends LitElement {
 
   render() {
     return html`
-      <input
-        type="text"
-        .value=${this.node.name}
-        @change=${this._handleNameChange}
-      >
+      <div class="node-content">
+        <input
+          type="text"
+          .value=${this.node.name}
+          @change=${this._handleNameChange}
+        >
+        <button class="delete-button" @click=${this._handleDeleteClick}>x</button>
+      </div>
       <button class="connect-button" @click=${this._requestConnection}>
         ${this.isConnecting ? 'Cancel' : 'Connect'}
       </button>
@@ -109,6 +133,14 @@ class NodeElement extends LitElement {
   _requestConnection() {
     this.dispatchEvent(new CustomEvent('connectrequest', {
       detail: { sourceId: this.node.id },
+      bubbles: true,
+      composed: true,
+    }));
+  }
+
+  _handleDeleteClick() {
+    this.dispatchEvent(new CustomEvent('deletenode', {
+      detail: { id: this.node.id },
       bubbles: true,
       composed: true,
     }));
