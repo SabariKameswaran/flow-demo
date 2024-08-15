@@ -42,6 +42,7 @@ class MindMapApp extends LitElement {
           .isConnecting=${this.connectingNodeId === node.id}
           @nodeupdate=${this._handleNodeUpdate}
           @connectrequest=${this._handleConnectRequest}
+          @deletenode=${(e) => this._deleteNode(e.detail.id)}
           @click=${() => this._handleNodeClick(node.id)}
         ></node-element>
       `)}
@@ -88,6 +89,12 @@ class MindMapApp extends LitElement {
       targetId,
     };
     this.edges = [...this.edges, newEdge];
+  }
+
+  _deleteNode(nodeId) {
+    this.nodes = this.nodes.filter(node => node.id !== nodeId);
+    this.edges = this.edges.filter(edge => edge.sourceId !== nodeId && edge.targetId !== nodeId);
+    this.requestUpdate();
   }
 }
 
