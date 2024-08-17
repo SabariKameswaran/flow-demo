@@ -25,18 +25,57 @@ class EdgeElement extends LitElement {
 
     if (!sourceNode || !targetNode) return html``;
 
-    const x1 = sourceNode.x;
-    const y1 = sourceNode.y;
-    const x2 = targetNode.x;
-    const y2 = targetNode.y;
-    const midX = (x1 + x2) / 2; // Midpoint for quadratic curve
+    // Get source and target node positions and dimensions
+    const { x: x1, y: y1, width: width1, height: height1 } = this._getNodeBounds(sourceNode);
+    const { x: x2, y: y2, width: width2, height: height2 } = this._getNodeBounds(targetNode);
+
+    // Calculate the best attachment points based on the relative positions of the nodes
+    const [startX, startY] = this._getAttachmentPoint(sourceNode, targetNode, x1, y1, width1, height1);
+    const [endX, endY] = this._getAttachmentPoint(targetNode, sourceNode, x2, y2, width2, height2);
 
     return html`
       <svg width="100%" height="100%">
-        <path d="M${x1},${y1} Q${midX},${y1} ${x2},${y2}" stroke="black" stroke-width="2" fill="none" />
+        <line x1="${startX}" y1="${startY}" x2="${endX}" y2="${endY}" stroke="black" stroke-width="2" />
       </svg>
     `;
+  }
+
+  // Helper function to calculate node bounds
+  _getNodeBounds(node) {
+    return {
+      x: node.x,
+      y: node.y,
+      width: node.width || 100, // Default width if not provided
+      height: node.height || 50, // Default height if not provided
+    };
+  }
+
+  // Helper function to determine the best attachment point on a node
+  _getAttachmentPoint(node, relativeTo, x, y, width, height) {
+    const centerX = x + width / 2;
+    const centerY = y + height / 2;
+
+    // Calculate relative position of the nodes
+    const relativeX = relativeTo.x + relativeTo.width / 2 - centerX;
+    const relativeY = relativeTo.y + relativeTo.height / 2 - centerY;
+
+    if (Math.abs(relativeX) > Math.abs(relativeY)) {
+      // Nodes are more horizontally aligned
+      if (relativeX > 0) {
+        return [x + width, centerY]; // Connect from the right side
+      } else {
+        return [x, centerY]; // Connect from the left side
+      }
+    } else {
+      // Nodes are more vertically aligned
+      if (relativeY > 0) {
+        return [centerX, y + height]; // Connect from the bottom
+      } else {
+        return [centerX, y]; // Connect from the top
+      }
+    }
   }
 }
 
 customElements.define('edge-element', EdgeElement);
+
